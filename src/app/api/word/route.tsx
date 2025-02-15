@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import WORDLIST from "@/component/wordlist";
 import { NextResponse } from "next/server";
 
