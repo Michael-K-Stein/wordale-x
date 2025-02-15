@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face
+{
+  font-family: 'Assistant';
+  src: url('/Assistant.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root
+{
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+body
+{
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Assistant';
+  direction: rtl;
+}
+
+body *
+{
+  font-family: 'Assistant';
+}
+
+div#keyboard > *
+{
+  font-family: 'Assistant';
+}
+
+@media (prefers-color-scheme: dark)
+{
+  :root
+  {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}

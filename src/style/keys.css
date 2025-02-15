@@ -1,0 +1,52 @@
+@font-face
+{
+    font-family: 'Assistant';
+    src: url('/Assistant.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.key
+{
+    width: 3rem;
+    height: 3rem;
+    margin: 0.3rem;
+    background-color: rgba(220, 220, 220, 0.95);
+    color: black;
+    font-weight: 1000;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    object-position: center center;
+    display: flex;
+    font-size: x-large;
+    font-family: 'Assistant';
+    border-radius: 0.3rem;
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    user-select: none;
+}
+
+.key:not([aria-disabled=true])
+{
+    cursor: pointer;
+}
+
+.key[data-letter-is-burned=true]
+{
+    background-color: rgba(220, 220, 220, 0.50);
+}
+
+.key.special-key
+{
+    width: 5rem;
+}
+
+.key.special-key > svg
+{
+    height: 3rem;
+}
+
+.key:not([data-letter-is-burned=true]):hover
+{
+    background-color: rgba(240, 240, 240, 1);
+}

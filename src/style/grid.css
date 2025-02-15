@@ -1,0 +1,146 @@
+.letter-grid .letter-row .letter-box[data-letter-state]
+{
+    width: 5rem;
+    height: 5rem;
+    border: 2px solid rgba(220, 220, 220, 0.95);
+    border-radius: 0.5rem;
+    margin: 0.3rem;
+    color: rgba(220, 220, 220, 0.95);
+    text-align: center;
+    align-items: center;
+    object-position: center center;
+    font-size: 3.5rem;
+    font-weight: 1000;
+    font-family: 'Assistant';
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    user-select: none;
+}
+
+.letter-grid .letter-row .letter-box[data-letter-state='correct-place']
+{
+    background-color: rgba(0, 82, 0, 0.95);
+}
+
+.letter-grid .letter-row .letter-box[data-letter-state='wrong-place']
+{
+    background-color: rgba(80, 96, 3, 0.95);
+}
+
+.letter-grid .letter-row
+{
+    flex-direction: row;
+}
+
+.letter-box[data-animation='pop']
+{
+    animation-name: PopIn;
+    animation-duration: 100ms;
+}
+
+@keyframes PopIn
+{
+    from
+    {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    40%
+    {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+.letter-box[data-animation='flip-in']
+{
+    animation-name: FlipIn;
+    animation-duration: 800ms;
+    animation-timing-function: ease-in;
+}
+
+@keyframes FlipIn
+{
+    0%
+    {
+        transform: rotateX(0);
+    }
+
+    50%
+    {
+        transform: rotateX(-90deg);
+    }
+
+    100%
+    {
+        transform: rotateX(0);
+    }
+}
+
+.letter-box.wakeup
+{
+    animation-name: WakeUp;
+    animation-duration: 400ms;
+    animation-timing-function: ease-in;
+}
+
+@keyframes WakeUp
+{
+    0%
+    {
+        transform: translate(0px, 0px)
+    }
+
+    10%
+    {
+        transform: translate(10px, 0px)
+    }
+
+    20%
+    {
+        transform: translate(-10px, 0px)
+    }
+
+    30%
+    {
+        transform: translate(8px, 0px)
+    }
+
+    40%
+    {
+        transform: translate(-8px, 0px)
+    }
+
+    50%
+    {
+        transform: translate(6px, 0px)
+    }
+
+    60%
+    {
+        transform: translate(-6px, 0px)
+    }
+
+    70%
+    {
+        transform: translate(4px, 0px)
+    }
+
+    80%
+    {
+        transform: translate(-4px, 0px)
+    }
+
+    90%
+    {
+        transform: translate(2px, 0px)
+    }
+
+    100%
+    {
+        transform: translate(0, 0px)
+    }
+}
