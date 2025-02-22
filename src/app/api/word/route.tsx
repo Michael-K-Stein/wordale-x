@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 import { isAdmin } from "@/app/api/common";
 import WORDLIST from "@/component/wordlist";

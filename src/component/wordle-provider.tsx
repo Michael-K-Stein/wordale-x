@@ -139,6 +139,17 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
                     endGame(data.exactMatch);
                 }
 
+                data.guesses.map((g) =>
+                {
+                    g.map((e) =>
+                    {
+                        if (e.state === LetterGuessState.NotInWord)
+                        {
+                            setLettersBurned(v => [ ...v, e.letter ]);
+                        }
+                    });
+                });
+
                 setCurrentGuessIndex(data.guesses.length);
             })
             .catch(console.log);
