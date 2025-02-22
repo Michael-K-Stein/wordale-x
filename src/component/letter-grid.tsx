@@ -1,9 +1,10 @@
 'use client';
 import '@/style/grid.css';
-import { LetterBoxAnimationState, LetterGuessState, useWordle, WordleGuess, WordleGuessLetter } from "@/component/wordle-provider";
 import assert from "assert";
 import { useLayoutEffect, useRef } from 'react';
 import { handleEndLetters } from '@/component/utils';
+import { WordleGuessLetter, LetterBoxAnimationState, WordleGuess, LetterGuessState } from '@/app/api/common';
+import { useWordle } from '@/component/wordle-provider';
 
 function LetterBox({ letter, isLastLetter, index }: { letter: WordleGuessLetter, isLastLetter: boolean, index: number; })
 {

@@ -1,10 +1,25 @@
 export const dynamic = "force-static";
 
+import { isAdmin } from "@/app/api/common";
 import WORDLIST from "@/component/wordlist";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /// Get today's word
-export function GET()
+export async function GET(
+    request: NextRequest
+)
+{
+    if (await isAdmin(request))
+    {
+        return NextResponse.json(await getTodaysWord());
+    }
+    else
+    {
+        return NextResponse.json({}, { status: 401, statusText: 'Good luck!' });
+    }
+}
+
+export async function getTodaysWord(): Promise<string>
 {
     const MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
     const today = new Date();
@@ -12,5 +27,5 @@ export function GET()
 
     const daysSince = Math.round(Math.abs((today.getTime() - startDate.getTime()) / MILLISECONDS_IN_A_DAY));
 
-    return NextResponse.json(WORDLIST[ daysSince % WORDLIST.length ]);
+    return WORDLIST[ daysSince % WORDLIST.length ];
 }

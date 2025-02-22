@@ -1,27 +1,12 @@
 'use client';
 
+import { GuessApiResponse, isGameOver, LetterBoxAnimationState, LetterGuessState, WordleGuess, WordleGuessLetter } from '@/app/api/common';
 import { commitGamePlayed, isAllowedAnotherGame } from '@/component/enforcer';
 import { usePopup } from '@/component/popup-provider';
 import { chooseTauntMessage } from '@/component/taunt-message';
-import { handleEndLetters, hebrewLetterNormalizer, isHebrewLetter, isValidHebrewWord, wordleGuessToString } from '@/component/utils';
+import { handleEndLetters, hebrewLetterNormalizer, isHebrewLetter, wordleGuessToString } from '@/component/utils';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-export enum LetterGuessState
-{
-    Undefined = 'undefined',
-    NotInWord = 'not-in-word', // Gray
-    WrongPlace = 'wrong-place', // Yellow
-    CorrectPlace = 'correct-place', // Green
-};
-export enum LetterBoxAnimationState
-{
-    Undefined = 'undefined',
-    Idle = 'idle',
-    Pop = 'pop',
-    FlipIn = 'flip-in',
-};
-export type WordleGuessLetter = { letter: string, state: LetterGuessState, boxAnimation: LetterBoxAnimationState; };
-export type WordleGuess = Array<WordleGuessLetter>;
 export type WordleContext = {
     default: boolean;
     word: string;
@@ -130,66 +115,34 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
         setGameOver(true);
     }, [ word, setGameOver, showPopup, currentGuessIndex ]);
 
-    const checkGuessLetterState = useCallback((guessLetterValue: string, index: number): LetterGuessState =>
-    {
-        if (hebrewLetterNormalizer(guessLetterValue) === hebrewLetterNormalizer(word[ index ])) { return LetterGuessState.CorrectPlace; }
-        if (word.includes(hebrewLetterNormalizer(guessLetterValue))) { return LetterGuessState.WrongPlace; }
-        setLettersBurned(v => [ ...v, guessLetterValue ]);
-        return LetterGuessState.NotInWord;
-    }, [ word, setLettersBurned ]);
-
-    const isGuessExact = useCallback((guess: WordleGuess): boolean =>
-    {
-        const guessIsExact = guess.reduce(
-            (correctSoFar, currentLetter, letterIndex) =>
-            {
-                return correctSoFar && hebrewLetterNormalizer(currentLetter.letter) === hebrewLetterNormalizer(word[ letterIndex ]);
-            }, true);
-
-        return guessIsExact;
-    }, [ word ]);
-
-    const processGuess = useCallback((guess: WordleGuess): WordleGuess =>
-    {
-        return guess.map((currentGuessLetter, index): WordleGuessLetter =>
-        {
-            return {
-                letter: hebrewLetterNormalizer(currentGuessLetter.letter),
-                state: checkGuessLetterState(hebrewLetterNormalizer(currentGuessLetter.letter), index),
-                boxAnimation: LetterBoxAnimationState.FlipIn,
-            };
-        });
-    }, [ checkGuessLetterState ]);
-
     const commitGuess = useCallback((guess: WordleGuess) =>
     {
         if (guess.length < 5) { return; }
         if (guess.length > 5) { setLiveGuess([]); return; }
-        if (!isValidHebrewWord(guess)) { return invalidWordEnteredCallback(wordleGuessToString(guess)); }
-        if (guesses.length < 6 && !gameOver)
-        {
-            setGuesses([ ...guesses, processGuess(guess) ]);
-            setLiveGuess([]);
 
-            if (isGuessExact(guess))
+
+        fetch(`/api/guess`, {
+            method: 'POST',
+            body: JSON.stringify(
+                wordleGuessToString(guess)
+            )
+        })
+            .then((res) => res.json())
+            .then((data: GuessApiResponse) =>
             {
-                endGame(true);
-            }
-            else if (guesses.length === 5)
-            {
-                endGame(false);
-            }
-            setCurrentGuessIndex(v => v + 1);
-        }
-    }, [
-        gameOver,
-        guesses,
-        processGuess,
-        endGame,
-        setGuesses,
-        invalidWordEnteredCallback,
-        isGuessExact
-    ]);
+                if (data.wordInvalid) { return invalidWordEnteredCallback(wordleGuessToString(guess)); }
+                setGuesses(data.guesses);
+                setLiveGuess([]);
+
+                if (isGameOver(data))
+                {
+                    endGame(data.exactMatch);
+                }
+
+                setCurrentGuessIndex(data.guesses.length);
+            })
+            .catch(console.log);
+    }, [ endGame, setGuesses, invalidWordEnteredCallback ]);
 
     const appendLetterToGuess = useCallback((letter: string) =>
     {

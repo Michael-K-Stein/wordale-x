@@ -1,5 +1,5 @@
+import { WordleGuess } from "@/app/api/common";
 import HEBREW_WORDS from "@/component/hebrew-words";
-import { WordleGuess } from "@/component/wordle-provider";
 import assert from "assert";
 
 export function hebrewLetterNormalizer(letter: string): string
@@ -29,9 +29,9 @@ export function handleEndLetters(text: string): string
     return text.slice(0, text.length - 1) + (END_LETTERS[ lastLetter ] ?? lastLetter);
 }
 
-export function isValidHebrewWord(word: WordleGuess): boolean
+export function isValidHebrewWord(word: string): boolean
 {
-    return HEBREW_WORDS.includes(handleEndLetters(wordleGuessToString(word)));
+    return HEBREW_WORDS.includes(handleEndLetters(word));
 }
 
 export function wordleGuessToString(guess: WordleGuess): string
