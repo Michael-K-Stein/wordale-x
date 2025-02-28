@@ -4,7 +4,6 @@ import '@/style/popup.css';
 import '@/style/grid.css';
 import '@/style/keyboard.css';
 import '@/style/keys.css';
-import { PopupProvider } from "@/component/popup-provider";
 
 export const metadata: Metadata = {
     title: "וורדל'ה",
@@ -19,11 +18,7 @@ export default function RootLayout({
 {
     return (
         <html lang="he" dir="rtl">
-            <body>
-                <PopupProvider>
-                    { children }
-                </PopupProvider>
-            </body>
+            { children }
         </html>
     );
 }

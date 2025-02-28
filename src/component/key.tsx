@@ -1,3 +1,4 @@
+import Settings from '@/app/settings';
 import { useWordle } from '@/component/wordle-provider';
 import '@/style/keys.css';
 type KeyExtraProps = Exclude<React.HTMLAttributes<HTMLDivElement>, { 'className': '', 'id': ''; }>;
@@ -41,7 +42,7 @@ export function Backspace({ ...props }: KeyExtraProps)
 export function Enter({ ...props }: KeyExtraProps)
 {
     const { liveGuess, gameOver } = useWordle();
-    const keyIsDisabled = (liveGuess.length !== 5) || gameOver;
+    const keyIsDisabled = (liveGuess.length !== Settings.WORD_LENGTH) || gameOver;
 
     return (
         <SpecialKey svgSymbol={

@@ -3,8 +3,9 @@ import '@/style/grid.css';
 import assert from "assert";
 import { useLayoutEffect, useRef } from 'react';
 import { handleEndLetters } from '@/component/utils';
-import { WordleGuessLetter, LetterBoxAnimationState, WordleGuess, LetterGuessState } from '@/app/api/common';
 import { useWordle } from '@/component/wordle-provider';
+import { WordleGuessLetter, LetterBoxAnimationState, WordleGuess, LetterGuessState } from '@/shared-api/common';
+import Settings from '@/app/settings';
 
 function LetterBox({ letter, isLastLetter, index }: { letter: WordleGuessLetter, isLastLetter: boolean, index: number; })
 {
@@ -46,7 +47,7 @@ function LetterBox({ letter, isLastLetter, index }: { letter: WordleGuessLetter,
 function padGuess(guess: WordleGuess | undefined): WordleGuess
 {
     if (typeof guess === 'undefined') { guess = []; }
-    while (guess.length < 5)
+    while (guess.length < Settings.WORD_LENGTH)
     {
         guess = [ ...guess, { letter: '', state: LetterGuessState.Undefined, boxAnimation: LetterBoxAnimationState.Idle, } ];
     }
@@ -55,14 +56,14 @@ function padGuess(guess: WordleGuess | undefined): WordleGuess
 
 function LetterRow({ index, guess }: { index: number, guess: WordleGuess | undefined; })
 {
-    assert(!guess || guess.length <= 5, `WordleGuess has an invalid value ${guess}`);
+    assert(!guess || guess.length <= Settings.WORD_LENGTH, `WordleGuess has an invalid value ${guess}`);
 
     const normalizedGuess = padGuess(guess);
     const letters = normalizedGuess.map((letter, letterIndex) => <LetterBox
         key={ `letter-${index}-${letterIndex}` }
         letter={ letter }
         index={ letterIndex }
-        isLastLetter={ letterIndex === 4 }
+        isLastLetter={ letterIndex === Settings.WORD_LENGTH - 1 }
     />);
 
     return (
@@ -78,7 +79,14 @@ export default function LetterGrid()
 
     assert(!guesses[ currentGuessIndex ] || guesses[ currentGuessIndex ].length === 0);
 
-    const letterRows = [ 0, 1, 2, 3, 4, 5 ].map((index) => <LetterRow key={ `letter-row-${index}` } index={ index } guess={ (currentGuessIndex === index) ? liveGuess : guesses[ index ] } />);
+    const letterRows = Array.from({ length: Settings.MAX_GUESS_COUNT }, (_, index) => (
+        <LetterRow
+            key={ `letter-row-${index}` }
+            index={ index }
+            guess={ currentGuessIndex === index ? liveGuess : guesses[ index ] }
+        />
+    ));
+
     return (
         <div className="letter-grid flex flex-col">
             { letterRows }

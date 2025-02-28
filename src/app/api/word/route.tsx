@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { isAdmin } from "@/app/api/common";
+import { ApiAccessError, ApiSuccess, isAdmin } from "@/app/api/common";
 import WORDLIST from "@/component/wordlist";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 /// Get today's word
 export async function GET(
@@ -11,11 +11,11 @@ export async function GET(
 {
     if (await isAdmin(request))
     {
-        return NextResponse.json(await getTodaysWord());
+        return ApiSuccess(await getTodaysWord());
     }
     else
     {
-        return NextResponse.json({}, { status: 401, statusText: 'Good luck!' });
+        return ApiAccessError('Good luck!');
     }
 }
 

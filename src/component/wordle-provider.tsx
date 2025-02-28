@@ -1,10 +1,13 @@
 'use client';
 
-import { GuessApiResponse, isGameOver, LetterBoxAnimationState, LetterGuessState, WordleGuess, WordleGuessLetter } from '@/app/api/common';
-import { commitGamePlayed, isAllowedAnotherGame } from '@/component/enforcer';
+import Settings from '@/app/settings';
+import { safeApiFetcher } from '@/client-api/common-utils';
 import { usePopup } from '@/component/popup-provider';
+import { enqueueApiErrorSnackbar } from '@/component/snackbar-utils';
 import { chooseTauntMessage } from '@/component/taunt-message';
-import { handleEndLetters, hebrewLetterNormalizer, isHebrewLetter, wordleGuessToString } from '@/component/utils';
+import { handleEndLetters, HebrewLetter, hebrewLetterNormalizer, isHebrewLetter, wordleGuessToString } from '@/component/utils';
+import { isGameOver, LetterBoxAnimationState, LetterGuessState, WordleGuess, WordleGuessLetter } from '@/shared-api/common';
+import Api from '@/shared-api/types';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type WordleContext = {
@@ -53,10 +56,9 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
             window.localStorage.setItem('wordIndex', '0');
         }
 
-        fetch(`/api/word`)
-            .then((res) => res.json())
+        safeApiFetcher(`/api/word`)
             .then(setWord)
-            .catch(console.log);
+            .catch(console.error);
     }, [ setWord ]);
 
     const invalidWordEnteredCallback = useCallback((word: string) =>
@@ -71,8 +73,6 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
 
         window.localStorage.setItem('wordIndex', (parseInt(window.localStorage.getItem('wordIndex') ?? '0') + 1).toString(10));
         window.localStorage.setItem('wins', (parseInt(window.localStorage.getItem('wins') ?? '0') + (didWin ? 1 : 0)).toString(10));
-
-        commitGamePlayed();
 
         if (didWin)
         {
@@ -106,9 +106,16 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
         {
             setTimeout(() =>
             {
-                showPopup(
-                    `המילה היא "${word}"`
-                );
+                if (word)
+                {
+
+                    showPopup(
+                        `המילה היא "${word}"`
+                    );
+                } else
+                {
+                    showPopup(`לא נורא, אולי מחר :)`);
+                }
             }, 800);
         }
 
@@ -117,18 +124,17 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
 
     const commitGuess = useCallback((guess: WordleGuess) =>
     {
-        if (guess.length < 5) { return; }
-        if (guess.length > 5) { setLiveGuess([]); return; }
+        if (guess.length < Settings.WORD_LENGTH) { return; }
+        if (guess.length > Settings.WORD_LENGTH) { setLiveGuess([]); return; }
 
 
-        fetch(`/api/guess`, {
+        safeApiFetcher(`/api/guess`, {
             method: 'POST',
             body: JSON.stringify(
                 wordleGuessToString(guess)
             )
         })
-            .then((res) => res.json())
-            .then((data: GuessApiResponse) =>
+            .then((data: Api.Response.Guess) =>
             {
                 if (data.wordInvalid) { return invalidWordEnteredCallback(wordleGuessToString(guess)); }
                 setGuesses(data.guesses);
@@ -152,13 +158,16 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
 
                 setCurrentGuessIndex(data.guesses.length);
             })
-            .catch(console.log);
+            .catch((error) =>
+            {
+                enqueueApiErrorSnackbar(`הפעולה נכשלה`, error);
+            });
     }, [ endGame, setGuesses, invalidWordEnteredCallback ]);
 
     const appendLetterToGuess = useCallback((letter: string) =>
     {
-        const newGuessLetter: WordleGuessLetter = { letter, state: LetterGuessState.Undefined, boxAnimation: LetterBoxAnimationState.Pop, };
-        setLiveGuess(oldGuess => (oldGuess.length < 5) ? [ ...oldGuess, newGuessLetter ] : oldGuess);
+        const newGuessLetter: WordleGuessLetter = { letter: letter as HebrewLetter, state: LetterGuessState.Undefined, boxAnimation: LetterBoxAnimationState.Pop, };
+        setLiveGuess(oldGuess => (oldGuess.length < Settings.WORD_LENGTH) ? [ ...oldGuess, newGuessLetter ] : oldGuess);
     }, [ setLiveGuess ]);
 
     const removeLetterFromGuess = useCallback(() =>
@@ -176,7 +185,7 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
     {
         if (isHebrewLetter(event.key))
         {
-            appendLetterToGuess(hebrewLetterNormalizer(event.key));
+            appendLetterToGuess(hebrewLetterNormalizer(event.key as HebrewLetter));
         }
         else if (event.key === 'Enter')
         {
@@ -198,14 +207,14 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
         };
     }, [ keyDownCallback ]);
 
-    useEffect(() =>
-    {
-        if (!isAllowedAnotherGame())
-        {
-            setGameOver(true);
-            showPopup(`כבר שחקת היום.`);
-        }
-    }, [ setGameOver, showPopup ]);
+    // useEffect(() =>
+    // {
+    //     if (!isAllowedAnotherGame())
+    //     {
+    //         setGameOver(true);
+    //         showPopup(`כבר שחקת היום.`);
+    //     }
+    // }, [ setGameOver, showPopup ]);
 
     return (
         <WordleContextProvider.Provider value={ {

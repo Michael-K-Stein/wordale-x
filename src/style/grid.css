@@ -21,12 +21,12 @@
 
 .letter-grid .letter-row .letter-box[data-letter-state='correct-place']
 {
-    background-color: rgba(0, 82, 0, 0.95);
+    background-color: #538d4ed0;
 }
 
 .letter-grid .letter-row .letter-box[data-letter-state='wrong-place']
 {
-    background-color: rgba(80, 96, 3, 0.95);
+    background-color: #b59f3bd0;
 }
 
 .letter-grid .letter-row
