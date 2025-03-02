@@ -7,16 +7,18 @@ import '@/style/keys.css';
 import Keyboard from "@/component/keyboard";
 import LetterGrid from "@/component/letter-grid";
 import { WordleProvider } from "@/component/wordle-provider";
+import BotPanel from "@/component/bot-panel";
 
 export default function Home()
 {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <WordleProvider>
-        <LetterGrid />
-        <div style={ { height: '3rem' } } />
-        <Keyboard />
-      </WordleProvider>
-    </div>
-  );
+    return (
+        <div className="flex flex-col items-center justify-center h-screen">
+            <WordleProvider>
+                <BotPanel />
+                <LetterGrid />
+                <div style={ { height: '3rem' } } />
+                <Keyboard />
+            </WordleProvider>
+        </div>
+    );
 }

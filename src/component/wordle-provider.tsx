@@ -51,12 +51,15 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
     useMemo(() =>
     {
         if (typeof window === 'undefined') { return; }
-        if (!window.localStorage.getItem('wordIndex'))
+        if (Settings.FREE_PLAY)
         {
-            window.localStorage.setItem('wordIndex', '0');
+            if (!window.localStorage.getItem('wordIndex'))
+            {
+                window.localStorage.setItem('wordIndex', '0');
+            }
         }
 
-        safeApiFetcher(`/api/word`)
+        safeApiFetcher(`/api/word${Settings.FREE_PLAY ? `?i=${window.localStorage.getItem('wordIndex')}` : ''}`)
             .then(setWord)
             .catch(console.error);
     }, [ setWord ]);
@@ -71,7 +74,10 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
     {
         if (typeof window === 'undefined') { return; }
 
-        window.localStorage.setItem('wordIndex', (parseInt(window.localStorage.getItem('wordIndex') ?? '0') + 1).toString(10));
+        if (Settings.FREE_PLAY)
+        {
+            window.localStorage.setItem('wordIndex', (parseInt(window.localStorage.getItem('wordIndex') ?? '0') + 1).toString(10));
+        }
         window.localStorage.setItem('wins', (parseInt(window.localStorage.getItem('wins') ?? '0') + (didWin ? 1 : 0)).toString(10));
 
         if (didWin)
@@ -131,7 +137,7 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
         safeApiFetcher(`/api/guess`, {
             method: 'POST',
             body: JSON.stringify(
-                wordleGuessToString(guess)
+                Settings.FREE_PLAY ? { guess: wordleGuessToString(guess), word } : wordleGuessToString(guess)
             )
         })
             .then((data: Api.Response.Guess) =>
@@ -162,7 +168,7 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
             {
                 enqueueApiErrorSnackbar(`הפעולה נכשלה`, error);
             });
-    }, [ endGame, setGuesses, invalidWordEnteredCallback ]);
+    }, [ word, invalidWordEnteredCallback, endGame ]);
 
     const appendLetterToGuess = useCallback((letter: string) =>
     {

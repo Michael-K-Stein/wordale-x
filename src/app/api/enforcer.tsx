@@ -1,8 +1,11 @@
+import Settings from "@/app/settings";
 import { JWTUserData, LastGameTimeData } from "@/server-api/enc";
 import databaseController from "@/server-api/mongo-db-controller";
 
 export async function isAllowedAnotherGame(userData: JWTUserData): Promise<boolean>
 {
+    if (Settings.FREE_PLAY) { return true; }
+
     const userFound = await databaseController.users.findOne({ username: userData.username });
     if (!userFound) { return true; }
 

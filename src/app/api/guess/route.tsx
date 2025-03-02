@@ -122,8 +122,10 @@ export async function POST(
             if (!(await isAllowedAnotherGame(userData))) { throw new ClientApiError(`כבר שחקת היום.`); }
         }
 
-        const guess: string = await request.json();
-        const todaysWord = await getTodaysWord();
+        const guessData: string | { guess: string, word: string; } = await request.json();
+        assert(!Settings.FREE_PLAY || (typeof guessData === 'object' && typeof guessData.word === 'string'), 'FREE_PLAY did not provide a word!');
+        const todaysWord = Settings.FREE_PLAY ? ((typeof guessData === 'object') ? (guessData.word) : '') : await getTodaysWord();
+        const guess = (typeof guessData === 'object') ? guessData.guess : guessData;
 
         const response: Api.Response.Guess = {
             wordInvalid: false,
@@ -149,8 +151,12 @@ export async function POST(
         userData.guesses = response.guesses;
         userData.gameOver = isGameOver(response);
 
+        if (Settings.FREE_PLAY && userData.gameOver)
+        {
+            userData.guesses = [];
+        }
         await setUserData(userData);
-        if (userData.gameOver)
+        if (userData.gameOver && !Settings.FREE_PLAY)
         {
             commitGamePlayed(userData);
         }

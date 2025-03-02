@@ -1,5 +1,5 @@
 
-import HEBREW_WORDS from "@/component/hebrew-words";
+import HEBREW_WORDS from "@/shared-api/hebrew-words";
 import { WordleGuess } from "@/shared-api/common";
 import assert from "assert";
 

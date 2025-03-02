@@ -6,6 +6,7 @@ namespace Settings
     export const ADMIN_COOKIE_HASH = '927c6df8ef57050e277ab54d7f5294ab955a784d53d2b9428788ccb2245bc503';
     export const USER_AUTH_COOKIE_NAME = 'auth';
     export const SECURE_CONTEXT_ONLY = false; //process.env.NODE_ENV !== 'development' && (!process.env.HTTP_ONLY);
+    export const FREE_PLAY = true;
 };
 export default Settings;
 
