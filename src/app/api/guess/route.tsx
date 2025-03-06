@@ -3,7 +3,8 @@ import { ApiSuccess, catchHandler, getUserData, isAdmin, setUserData } from "@/a
 import { commitGamePlayed, isAllowedAnotherGame } from "@/app/api/enforcer";
 import { getTodaysWord } from "@/app/api/word/route";
 import Settings from "@/app/settings";
-import { HebrewLetter, hebrewLetterNormalizer, HebrewNormalLetter, isValidHebrewWord, stringToNormalizedArray } from "@/component/utils";
+import { HebrewLetter, hebrewLetterNormalizer, HebrewNormalLetter, stringToNormalizedArray } from "@/component/utils";
+import { isValidHebrewWord } from "@/server-api/utils";
 import { LetterGuessState, WordleGuessLetter, LetterBoxAnimationState, WordleGuess, isGameOver } from "@/shared-api/common";
 import { ClientApiError } from "@/shared-api/errors";
 import Api from "@/shared-api/types";
@@ -127,6 +128,13 @@ export async function POST(
         const todaysWord = Settings.FREE_PLAY ? ((typeof guessData === 'object') ? (guessData.word) : '') : await getTodaysWord();
         const guess = (typeof guessData === 'object') ? guessData.guess : guessData;
 
+        if (Settings.FREE_PLAY && userData.gameOver)
+        {
+            console.log('Clearing guesses');
+            userData.guesses = [];
+            userData.gameOver = false;
+        }
+
         const response: Api.Response.Guess = {
             wordInvalid: false,
             guesses: userData.guesses,
@@ -151,15 +159,46 @@ export async function POST(
         userData.guesses = response.guesses;
         userData.gameOver = isGameOver(response);
 
-        if (Settings.FREE_PLAY && userData.gameOver)
-        {
-            userData.guesses = [];
-        }
         await setUserData(userData);
         if (userData.gameOver && !Settings.FREE_PLAY)
         {
             commitGamePlayed(userData);
         }
+
+        return ApiSuccess(response);
+    }
+    catch (e: unknown)
+    {
+        return catchHandler(request, e);
+    }
+}
+
+export async function GET(
+    request: NextRequest
+)
+{
+    try
+    {
+        const userData = await getUserData();
+        if (!isAdmin(request))
+        {
+            if (!(await isAllowedAnotherGame(userData))) { throw new ClientApiError(`כבר שחקת היום.`); }
+        }
+
+        if (Settings.FREE_PLAY && userData.gameOver)
+        {
+            console.log('Clearing guesses');
+            userData.guesses = [];
+            userData.gameOver = false;
+        }
+
+        const response: Api.Response.Guess = {
+            wordInvalid: false,
+            guesses: userData.guesses,
+            exactMatch: false,
+        };
+
+        userData.gameOver = isGameOver(response);
 
         return ApiSuccess(response);
     }

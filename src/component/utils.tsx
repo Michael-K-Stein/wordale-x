@@ -1,5 +1,3 @@
-
-import HEBREW_WORDS from "@/shared-api/hebrew-words";
 import { WordleGuess } from "@/shared-api/common";
 import assert from "assert";
 
@@ -32,11 +30,6 @@ export function handleEndLetters(text: string): string
     const lastLetter = text.slice(text.length - 1);
 
     return text.slice(0, text.length - 1) + (END_LETTERS[ lastLetter as HebrewNormalLetter ] ?? lastLetter);
-}
-
-export function isValidHebrewWord(word: string): boolean
-{
-    return HEBREW_WORDS.includes(handleEndLetters(word));
 }
 
 export function wordleGuessToString(guess: WordleGuess): string

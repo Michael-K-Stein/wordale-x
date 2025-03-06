@@ -8,6 +8,7 @@ import { chooseTauntMessage } from '@/component/taunt-message';
 import { handleEndLetters, HebrewLetter, hebrewLetterNormalizer, isHebrewLetter, wordleGuessToString } from '@/component/utils';
 import { isGameOver, LetterBoxAnimationState, LetterGuessState, WordleGuess, WordleGuessLetter } from '@/shared-api/common';
 import Api from '@/shared-api/types';
+import { Typography } from '@mui/material';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type WordleContext = {
@@ -47,6 +48,41 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
     const [ lettersBurned, setLettersBurned ] = useState<Array<string>>([]);
 
     const { showPopup } = usePopup();
+
+    useEffect(() =>
+    {
+
+        safeApiFetcher(`/api/guess`, {
+            method: 'GET',
+        })
+            .then((data: Api.Response.Guess) =>
+            {
+                setGuesses(data.guesses);
+                setLiveGuess([]);
+
+                if (isGameOver(data))
+                {
+                    endGame(data.exactMatch);
+                }
+
+                data.guesses.map((g) =>
+                {
+                    g.map((e) =>
+                    {
+                        if (e.state === LetterGuessState.NotInWord)
+                        {
+                            setLettersBurned(v => [ ...v, e.letter ]);
+                        }
+                    });
+                });
+
+                setCurrentGuessIndex(data.guesses.length);
+            })
+            .catch((error) =>
+            {
+                enqueueApiErrorSnackbar(`הפעולה נכשלה`, error);
+            });
+    }, [ setGuesses, setCurrentGuessIndex, setLettersBurned ]);
 
     useMemo(() =>
     {
@@ -104,7 +140,9 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
                             d="m17.989 5.768 2.563-.533.786 2.497 2.486.82-.567 2.555L25 13.059l-1.768 1.93.533 2.563-2.497.786-.82 2.486-2.555-.567L15.941 22l-1.93-1.768-2.563.533-.786-2.497-2.486-.82.567-2.555L7 12.941l1.768-1.93-.533-2.563 2.497-.786.82-2.486 2.555.567L16.059 4z"
                         ></path>
                     </svg>
-                    { chooseTauntMessage(currentGuessIndex) }
+                    <Typography variant='h4' className='rtl'>
+                        { chooseTauntMessage(currentGuessIndex) }
+                    </Typography>
                 </div>
             );
         }
@@ -212,15 +250,6 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
             document.removeEventListener('keydown', keyDownCallback);
         };
     }, [ keyDownCallback ]);
-
-    // useEffect(() =>
-    // {
-    //     if (!isAllowedAnotherGame())
-    //     {
-    //         setGameOver(true);
-    //         showPopup(`כבר שחקת היום.`);
-    //     }
-    // }, [ setGameOver, showPopup ]);
 
     return (
         <WordleContextProvider.Provider value={ {

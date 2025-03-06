@@ -39,7 +39,7 @@ const WORDLIST = [
     "שעתטש",
     "שיאון",
 
-];/*+ [
+].concat([
     "שגשוג",
     "מפלצת",
     "חיקוי",
@@ -1192,6 +1192,6 @@ const WORDLIST = [
     "וידאו",
     "צפריר",
     "מחונן"
-];*/
+]);
 
 export default WORDLIST;

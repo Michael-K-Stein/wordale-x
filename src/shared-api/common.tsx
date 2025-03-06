@@ -9,6 +9,7 @@ export enum LetterGuessState
     WrongPlace = 'wrong-place', // Yellow
     CorrectPlace = 'correct-place', // Green
 };
+export type LetterGuessEntropyState = Exclude<LetterGuessState, LetterGuessState.Undefined>;
 export enum LetterBoxAnimationState
 {
     Undefined = 'undefined',
@@ -17,6 +18,7 @@ export enum LetterBoxAnimationState
     FlipIn = 'flip-in',
 };
 export type WordleGuessLetter = { letter: HebrewLetter, state: LetterGuessState, boxAnimation: LetterBoxAnimationState; };
+export type WordleEntropyGuessLetter = { letter: HebrewLetter, state: LetterGuessEntropyState; };
 export type WordleGuess = Array<WordleGuessLetter>;
 
 export function isGameOver(guessState: Api.Response.Guess): boolean

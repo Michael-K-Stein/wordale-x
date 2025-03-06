@@ -1,6 +1,7 @@
 'use client';
 import { CloseButton } from '@/component/utils';
 import '@/style/popup.css';
+import { Typography } from '@mui/material';
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
@@ -50,11 +51,11 @@ export const PopupProvider = ({ children }: { children: React.ReactNode; }) =>
         } }>
             <div className="relative w-full h-full">
                 <div className="notification-box" hidden={ !visible } data-hidden={ !visible } aria-disabled={ !visible }>
-                    <div className='inner-box'>
+                    <div className='inner-box rtl' dir='rtl'>
                         <CloseButton className='close-button' onClick={ () => setVisible(false) } />
-                        <h3>
+                        <Typography variant='h4' className='rtl'>
                             { popupText }
-                        </h3>
+                        </Typography>
                     </div>
                 </div>
                 { children }

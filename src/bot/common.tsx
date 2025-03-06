@@ -1,6 +1,7 @@
 import { HebrewLetter, hebrewLetterNormalizer, HebrewNormalLetter, stringToArray, stringToNormalizedArray } from "@/component/utils";
 import { LetterGuessState, WordleGuess, WordleGuessLetter } from "@/shared-api/common";
 import HEBREW_WORDS from "@/shared-api/hebrew-words";
+import WORDLIST from "@/shared-api/wordlist";
 import assert from "assert";
 
 function countInString(text: string, searchString: string)
@@ -83,7 +84,7 @@ function wordIsPossible(
     };
 }
 
-export async function possibleWordsRemaining(guesses: Array<WordleGuess>)
+export function filterRemainingWords(guesses: Array<WordleGuess>, wordlist: Array<string>)
 {
     const indexKnownLetters: Array<HebrewNormalLetter | 'X'> = [
         'X', 'X', 'X', 'X', 'X', // Mark letters we do not know with an 'X'
@@ -138,9 +139,15 @@ export async function possibleWordsRemaining(guesses: Array<WordleGuess>)
 
     const knownLettersNotInWord = knownLettersNotInWordUnfiltered.filter((x) => !knownLettersInWrongPlace.includes(x) && !indexKnownLetters.includes(x));
 
-    const remainingWords = HEBREW_WORDS.filter(wordIsPossible({
+    const remainingWords = wordlist.filter(wordIsPossible({
         indexKnownLetters, knownLettersInWrongPlace, knownLettersNotInWord, indexKnownNotLetters, letterCounts
     }));
 
-    return remainingWords;
+    return [ ... new Set(remainingWords) ];
+}
+
+export function possibleWordsRemaining(guesses: Array<WordleGuess>)
+{
+    // const a = await calculateExpectedEntropy(guesses[ 0 ]);
+    return filterRemainingWords(guesses, WORDLIST);
 }

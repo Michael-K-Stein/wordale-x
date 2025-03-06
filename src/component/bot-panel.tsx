@@ -1,22 +1,35 @@
 'use client';
 
 import { possibleWordsRemaining } from "@/bot/common";
+import { calculateExpectedEntropy } from "@/bot/entropy";
+import { stringToNormalizedArray } from "@/component/utils";
 import { useWordle } from "@/component/wordle-provider";
 import { Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function BotPanel()
 {
     // return (<div></div>);
     const { guesses } = useWordle();
-    const [ words, setWords ] = useState<Array<string>>([]);
+    const [ words, setWords ] = useState<Array<{ word: string, entropy: number; }>>([]);
 
-    useEffect(() =>
+    useMemo(() =>
     {
-        possibleWordsRemaining(guesses).then(setWords);
+        const wordsRemaining = possibleWordsRemaining(guesses);
+        console.debug(`There are ${wordsRemaining.length} words still viable.`);
+
+        const calculatedWords = wordsRemaining.map((word) =>
+        {
+            return {
+                word, entropy: calculateExpectedEntropy(stringToNormalizedArray(word), wordsRemaining)
+            };
+        });
+        calculatedWords.sort((a, b) => a.entropy - b.entropy).reverse();
+
+        setWords(calculatedWords);
     }, [ guesses ]);
 
-    const wordTiles = words.slice(0, 100).map((word, index) => <li key={ `${index}-${word}` }><Typography>{ word }</Typography></li>);
+    const wordTiles = words.slice(0, 100).map((wordData, index) => <li key={ `${index}-${wordData.word}` }><Typography>{ wordData.word } : { wordData.entropy }</Typography></li>);
 
     return (
 
