@@ -13,11 +13,20 @@ RUN npm install --production --omit=dev --cache=/tmp/.npm --prefer-offline
 # Copy application code
 COPY . .
 
+ARG MONGODB_URI
+ARG MONGODB_DB_NAME
+ARG MONGODB_COLLECTION_NAME
+ARG LDAP_URL
+ARG JWT_SECRET
+ARG SYM_ENC_KEY
+
 # Build Next.js app (no external requests)
 RUN npm run build
 
 # Final stage: production server
 FROM node:20-alpine
+
+ENV NODE_ENV=production
 
 WORKDIR /app
 

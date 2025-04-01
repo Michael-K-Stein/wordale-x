@@ -23,7 +23,7 @@ export async function verifyUser(username: string, password: string)
 {
     if (!LDAP_URL)
     {
-        throw new Error(`LDAP environment variables must be configured!`);
+        throw new Error(`LDAP_URL environment variables must be configured!`);
     }
 
     // Validate the input
