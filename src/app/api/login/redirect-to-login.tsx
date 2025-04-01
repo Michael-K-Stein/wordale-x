@@ -1,18 +1,20 @@
 export const dynamic = "force-dynamic";
 
-import { headers } from "next/headers";
+// import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function friendlyRedirectToLogin(request: NextRequest, originUrl: string, failedLoginAttempts?: number)
 {
-    const requestHeaders = headers();
+    // const requestHeaders = headers();
 
     // const forwardedHost = requestHeaders.get('X-Forwarded-Host');
     // const forwardedProto = requestHeaders.get('X-Forwarded-Proto');
-    const origin = (await requestHeaders).get('origin');
+    // const origin = (await requestHeaders).get('origin');
 
     // const redirectionUrl = new URL(`${forwardedProto}://${forwardedHost}/login`);
-    const redirectionUrl = new URL(`${origin}/login`);
+    console.log(request.url);
+    const redirectionUrl = new URL(request.url);
+    redirectionUrl.pathname = `/login`;
 
     redirectionUrl.searchParams.set('from', originUrl);
     if (undefined !== failedLoginAttempts)

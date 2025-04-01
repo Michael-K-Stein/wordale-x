@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { ApiAccessError, ApiSuccess, isAdmin } from "@/app/api/common";
+import { getTodaysWord } from "@/app/api/get-word";
 import Settings from "@/app/settings";
 import WORDLIST from "@/shared-api/wordlist";
 import { NextRequest } from "next/server";
@@ -22,15 +23,4 @@ export async function GET(
     {
         return ApiAccessError('Good luck!');
     }
-}
-
-export async function getTodaysWord(): Promise<string>
-{
-    const MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-    const today = new Date();
-    const startDate = new Date(2008, 1, 22);
-
-    const daysSince = Math.round(Math.abs((today.getTime() - startDate.getTime()) / MILLISECONDS_IN_A_DAY));
-
-    return WORDLIST[ daysSince % WORDLIST.length ];
 }

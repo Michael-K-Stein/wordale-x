@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 
 export default function BotPanel()
 {
-    // return (<div></div>);
+    return (<div></div>);
     const { guesses } = useWordle();
     const [ words, setWords ] = useState<Array<{ word: string, entropy: number; }>>([]);
 
@@ -18,12 +18,14 @@ export default function BotPanel()
         const wordsRemaining = possibleWordsRemaining(guesses);
         console.debug(`There are ${wordsRemaining.length} words still viable.`);
 
+        console.time('calculateExpectedEntropy');
         const calculatedWords = wordsRemaining.map((word) =>
         {
             return {
                 word, entropy: calculateExpectedEntropy(stringToNormalizedArray(word), wordsRemaining)
             };
         });
+        console.timeEnd('calculateExpectedEntropy');
         calculatedWords.sort((a, b) => a.entropy - b.entropy).reverse();
 
         setWords(calculatedWords);

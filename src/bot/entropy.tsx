@@ -1,7 +1,7 @@
 import Settings from "@/app/settings";
-import { filterRemainingWords, possibleWordsRemaining } from "@/bot/common";
+import { filterRemainingWords } from "@/bot/common";
 import { HebrewLetter } from "@/component/utils";
-import { LetterBoxAnimationState, LetterGuessEntropyState, LetterGuessState, WordleEntropyGuessLetter, WordleGuess, WordleGuessLetter } from "@/shared-api/common";
+import { LetterBoxAnimationState, LetterGuessEntropyState, LetterGuessState, WordleGuess } from "@/shared-api/common";
 import assert from "assert";
 type Permutation = Array<LetterGuessEntropyState>;
 function allPossiblePermutations(): Array<Permutation>
@@ -40,32 +40,38 @@ function getRemainingWordsForPermutation({ guess, permutation, wordlist }: { gue
 
 function getPermutationProbability(args: { guess: Array<HebrewLetter>; permutation: Permutation; wordlist: Array<string>; })
 {
+    // Takes about as long as filterRemainingWordsV3 +- 0.05ms
     return getRemainingWordsForPermutation(args).length / args.wordlist.length;
 }
 
 function calculateInformationBitsScore(probability: number)
 {
+    // Takes about 0.0015ms
     return (probability === 0) ? 0 : -Math.log2(probability);
 }
 
 const possiblePermutations = allPossiblePermutations();
 export function calculateExpectedEntropy(nextGuess: Array<HebrewLetter>, wordlist: Array<string>): number
 {
-    const probabilityOfPermutation: Array<{ probability: number, permutation: Permutation, informationBits: number; }> = possiblePermutations.map((permutation) =>
-    {
-        const probability = getPermutationProbability({
-            guess: nextGuess, wordlist, permutation
+    const probabilityOfPermutation: Array<{ probability: number, permutation: Permutation, informationBits: number; }> =
+        possiblePermutations.map((permutation) =>
+        {
+            const probability = getPermutationProbability({
+                guess: nextGuess, wordlist, permutation
+            });
+            const informationBits = calculateInformationBitsScore(probability);
+            return {
+                probability,
+                permutation,
+                informationBits,
+            };
         });
-        const informationBits = calculateInformationBitsScore(probability);
-        return {
-            probability,
-            permutation,
-            informationBits,
-        };
-    });
 
-    // const total = probabilityOfPermutation.reduce((sum, permutationData) => sum + permutationData.probability, 0);
-    // console.debug(`The total probability is ${total}`);
+    if (0)
+    {
+        const total = probabilityOfPermutation.reduce((sum, permutationData) => sum + permutationData.probability, 0);
+        console.debug(`The total probability is ${total}`);
+    }
 
     const entropy = probabilityOfPermutation.reduce((sum, permutationData) => sum + (permutationData.probability * permutationData.informationBits), 0);
     console.log(`[${nextGuess.join('')}] Entropy: ${entropy}`);

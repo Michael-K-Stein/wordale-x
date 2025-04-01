@@ -49,63 +49,6 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
 
     const { showPopup } = usePopup();
 
-    useEffect(() =>
-    {
-
-        safeApiFetcher(`/api/guess`, {
-            method: 'GET',
-        })
-            .then((data: Api.Response.Guess) =>
-            {
-                setGuesses(data.guesses);
-                setLiveGuess([]);
-
-                if (isGameOver(data))
-                {
-                    endGame(data.exactMatch);
-                }
-
-                data.guesses.map((g) =>
-                {
-                    g.map((e) =>
-                    {
-                        if (e.state === LetterGuessState.NotInWord)
-                        {
-                            setLettersBurned(v => [ ...v, e.letter ]);
-                        }
-                    });
-                });
-
-                setCurrentGuessIndex(data.guesses.length);
-            })
-            .catch((error) =>
-            {
-                enqueueApiErrorSnackbar(`הפעולה נכשלה`, error);
-            });
-    }, [ setGuesses, setCurrentGuessIndex, setLettersBurned ]);
-
-    useMemo(() =>
-    {
-        if (typeof window === 'undefined') { return; }
-        if (Settings.FREE_PLAY)
-        {
-            if (!window.localStorage.getItem('wordIndex'))
-            {
-                window.localStorage.setItem('wordIndex', '0');
-            }
-        }
-
-        safeApiFetcher(`/api/word${Settings.FREE_PLAY ? `?i=${window.localStorage.getItem('wordIndex')}` : ''}`)
-            .then(setWord)
-            .catch(console.error);
-    }, [ setWord ]);
-
-    const invalidWordEnteredCallback = useCallback((word: string) =>
-    {
-        if (typeof window === 'undefined') { return; }
-        showPopup(`המילה '${handleEndLetters(word)}' אינה מוכרת.`);
-    }, [ showPopup ]);
-
     const endGame = useCallback((didWin: boolean) =>
     {
         if (typeof window === 'undefined') { return; }
@@ -165,6 +108,28 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
 
         setGameOver(true);
     }, [ word, setGameOver, showPopup, currentGuessIndex ]);
+
+    useMemo(() =>
+    {
+        if (typeof window === 'undefined') { return; }
+        if (Settings.FREE_PLAY)
+        {
+            if (!window.localStorage.getItem('wordIndex'))
+            {
+                window.localStorage.setItem('wordIndex', '0');
+            }
+        }
+
+        safeApiFetcher(`/api/word${Settings.FREE_PLAY ? `?i=${window.localStorage.getItem('wordIndex')}` : ''}`)
+            .then(setWord)
+            .catch(console.error);
+    }, [ setWord ]);
+
+    const invalidWordEnteredCallback = useCallback((word: string) =>
+    {
+        if (typeof window === 'undefined') { return; }
+        showPopup(`המילה '${handleEndLetters(word)}' אינה מוכרת.`);
+    }, [ showPopup ]);
 
     const commitGuess = useCallback((guess: WordleGuess) =>
     {
@@ -250,6 +215,41 @@ export const WordleProvider = ({ children }: { children: React.ReactNode; }) =>
             document.removeEventListener('keydown', keyDownCallback);
         };
     }, [ keyDownCallback ]);
+
+    useEffect(() =>
+    {
+
+        safeApiFetcher(`/api/guess`, {
+            method: 'GET',
+        })
+            .then((data: Api.Response.Guess) =>
+            {
+                setGuesses(data.guesses);
+                setLiveGuess([]);
+
+                if (isGameOver(data))
+                {
+                    endGame(data.exactMatch);
+                }
+
+                data.guesses.map((g) =>
+                {
+                    g.map((e) =>
+                    {
+                        if (e.state === LetterGuessState.NotInWord)
+                        {
+                            setLettersBurned(v => [ ...v, e.letter ]);
+                        }
+                    });
+                });
+
+                setCurrentGuessIndex(data.guesses.length);
+            })
+            .catch((error) =>
+            {
+                enqueueApiErrorSnackbar(`הפעולה נכשלה`, error);
+            });
+    }, [ endGame, setGuesses, setCurrentGuessIndex, setLettersBurned ]);
 
     return (
         <WordleContextProvider.Provider value={ {

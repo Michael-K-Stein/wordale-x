@@ -1,7 +1,7 @@
 
 import { ApiSuccess, catchHandler, getUserData, isAdmin, setUserData } from "@/app/api/common";
 import { commitGamePlayed, isAllowedAnotherGame } from "@/app/api/enforcer";
-import { getTodaysWord } from "@/app/api/word/route";
+import { getTodaysWord } from "@/app/api/get-word";
 import Settings from "@/app/settings";
 import { HebrewLetter, hebrewLetterNormalizer, HebrewNormalLetter, stringToNormalizedArray } from "@/component/utils";
 import { isValidHebrewWord } from "@/server-api/utils";
